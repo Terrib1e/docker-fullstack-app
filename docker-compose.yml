@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - app_network
+
+  backend:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - DB_USER=postgres
+      - DB_PASSWORD=secret
+      - DB_NAME=tasks_db
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      - db
+    networks:
+      - app_network
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=tasks_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app_network
+
+volumes:
+  db_data:
+
+networks:
+  app_network:
